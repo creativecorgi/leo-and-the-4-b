@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leo and the 4 B’s – A Lion’s Journey to Lowell Elementary</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background-color: white;
+      padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .story, #quiz {
+      max-width: 700px;
+      width: 90%;
+      margin: 0 auto 1em auto;
+    }
+    .feedback {
+      font-weight: bold;
+      color: green;
+      margin-top: 1em;
+    }
+    button {
+      padding: 1em;
+      font-size: 1em;
+      background-color: #ffd966;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 0.5em;
+    }
+    button:hover {
+      background-color: #ffcc33;
+    }
+    .highlight {
+      background-color: yellow;
+    }
+    #quiz {
+      display: none;
+      margin-top: 2em;
+      width: 100%;
+    }
+    #titleScreen {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+    }
+    #coverImage {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background-color: white;
+    }
+    #startWrapper {
+      width: 100%;
+      text-align: center;
+      margin-top: 1em;
+    }
+    #startButton {
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div id="titleScreen">
+    <img id="coverImage" src="cover.png" alt="Book Cover" />
+    <div id="startWrapper">
+      <button id="startButton" onclick="startStory()">Click to Start</button>
+    </div>
+  </div>
+  <div id="storyContainer" style="display:none;">
+    <img id="storyImage" src="" alt="Story Illustration" style="width: 100%; height: 100%; object-fit: contain; display: none; background-color: white; margin: 0 auto 1em auto;" />
+    <div class="story" id="storyText"></div>
+    <div style="display: flex; justify-content: space-evenly; width: 100%; max-width: 600px; margin: 0 auto;">
+      <button onclick="backPage()">Previous Page</button>
+      <button onclick="playReadAloud()">Read For Me</button>
+      <button onclick="nextPage()">Next Page</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  
+  <div id="quiz" style="display:none;">
+    <h2>Quiz Time!</h2>
+    <div id="question1">
+      <p>1. What did Leo hear that made him curious?</p>
+      <button onclick="checkAnswer(this, 1, 'A')">A. Music and laughter</button>
+      <button onclick="checkAnswer(this, 1, 'B')">B. Roaring lions</button>
+    </div>
+    <div id="question2">
+      <p>2. What words did Leo see on the school roof?</p>
+      <button onclick="checkAnswer(this, 2, 'A')">A. Lowell Learners Rock!</button>
+      <button onclick="checkAnswer(this, 2, 'B')">B. Lowell Lions Love Learning</button>
+    </div>
+    <div id="question3">
+      <p>3. What did the children invite Leo to learn about?</p>
+      <button onclick="checkAnswer(this, 3, 'A')">A. Their playground games</button>
+      <button onclick="checkAnswer(this, 3, 'B')">B. The 4 B’s</button>
+    </div>
+    <div id="question4">
+      <p>4. What were the 4 B’s Leo saw on the wall?</p>
+      <button onclick="checkAnswer(this, 4, 'A')">A. Be Brave, Be Bold, Be Bright, Be Big</button>
+      <button onclick="checkAnswer(this, 4, 'B')">B. Be Safe, Be Respectful, Be Responsible, Be Ready</button>
+    </div>
+    <div id="question5">
+      <p>5. What did Leo do to show he was being safe?</p>
+      <button onclick="checkAnswer(this, 5, 'A')">A. He ran through the hallways</button>
+      <button onclick="checkAnswer(this, 5, 'B')">B. He walked quietly and waited his turn</button>
+    </div>
+    <div id="question6">
+      <p>6. What did Leo see students doing to be respectful?</p>
+      <button onclick="checkAnswer(this, 6, 'A')">A. Sharing snacks loudly</button>
+      <button onclick="checkAnswer(this, 6, 'B')">B. Raising their hands and using kind words</button>
+    </div>
+    <div id="question7">
+      <p>7. How did students show responsibility at lunch?</p>
+      <button onclick="checkAnswer(this, 7, 'A')">A. They left a mess on the tables</button>
+      <button onclick="checkAnswer(this, 7, 'B')">B. They cleaned up and helped their friends</button>
+    </div>
+    <div id="question8">
+      <p>8. What does being ready mean at school?</p>
+      <button onclick="checkAnswer(this, 8, 'A')">A. Having your backpack and listening ears</button>
+      <button onclick="checkAnswer(this, 8, 'B')">B. Running around before class starts</button>
+    </div>
+    <div id="question9">
+      <p>9. What did Leo earn after learning the 4 B’s?</p>
+      <button onclick="checkAnswer(this, 9, 'A')">A. A gold star</button>
+      <button onclick="checkAnswer(this, 9, 'B')">B. A Lowell Lion Badge</button>
+    </div>
+    <div id="question10">
+      <p>10. What did Leo promise at the end of the story?</p>
+      <button onclick="checkAnswer(this, 10, 'A')">A. To roar louder every day</button>
+      <button onclick="checkAnswer(this, 10, 'B')">B. To follow the 4 B’s every day</button>
+    </div>
+    <div id="quizFeedback" class="feedback"></div>
+    <div id="finalScore" class="feedback" style="margin-top: 1em;"></div>
+  </div>
+
+  <script>
+    let bonusMode = false;
+    let endAudio = null;
+
+    const pages = [
+      "Deep in the jungle, a young lion cub heard music and laughter drifting through the trees. Curious, he followed the sound and came across something he'd never seen before — a school! On the rooftop, painted in big bold letters, he saw: “Lowell Lions Love Learning.” “Lions? Learning?” he whispered, tilting his head. “I’m a lion... and I do love learning!”",
+      "Leo crept closer and read a big sign near the entrance: Lowell Elementary. His eyes sparkled. “It looks fun... maybe I can learn something here,” he thought. Just then, the front doors opened and children walked out, giggling and chatting. One child noticed him and said, “Hi there!” Leo smiled shyly. “Hi... my name is Leo. I saw your roof sign and wanted to learn more.”",
+      "The kids beamed. “Welcome, Leo! This is our school — do you want to come see what we do?” Leo nodded eagerly. “Yes, please! I want to learn everything.” “We’ll show you around and teach you something really important,” one student said. “It’s called the 4 B’s — it’s how we all take care of each other here.” Leo’s ears perked up. “That sounds important!”",
+      "Inside the hallway, Leo saw four big, bold words on the wall: Be Safe, Be Respectful, Be Responsible, Be Ready. Each one was painted with bright colors and fun pictures. “These are the 4 B’s,” a teacher explained. “They help us all learn and grow together.” Leo read the words aloud. “Be Safe… Be Respectful… Be Responsible… Be Ready.”",
+      "The students showed Leo how they walked in a quiet line through the hall. “We keep our hands and feet to ourselves and move carefully,” someone said. Leo watched them stop at each doorway and wait their turn to enter. “Being safe helps everyone feel calm and protected,” said the teacher. Leo practiced walking safely and smiled. “That feels nice!”",
+      "In the classroom, Leo saw kids raising their hands before speaking. They listened quietly while others talked and used kind words. “Respect means we treat others the way we want to be treated,” said a student. “Even when we disagree, we stay calm and kind.” Leo nodded. “That makes everyone feel important.”",
+      "In the lunch area, Leo noticed kids cleaning up after themselves. Some students even helped their friends carry trays or pick up spills. “Being responsible means doing the right thing, even when no one is watching,” a student explained. “We take care of our space, our things, and our learning.” Leo helped wipe a table and felt proud of his actions.",
+      "Outside, students lined up quickly when the bell rang. “Being ready means having what you need and listening when it’s time to start,” the teacher said. Leo noticed how students had their backpacks, pencils, and big listening ears. “Being ready helps us learn more and feel less stressed,” one student shared. Leo checked his paws and said, “I’m ready too!”",
+      "Back in the classroom, Leo said, “I think I understand the 4 B’s now.” “Be Safe, Be Respectful, Be Responsible, and Be Ready!” The kids clapped and cheered for him. The teacher gave Leo a special Lowell Lion Badge for learning the rules. “Thank you for teaching me!” Leo beamed.",
+      "“Now you’re part of our Lowell family,” said the teacher warmly. Leo looked around at all the smiling faces. “I’ll try my best to follow the 4 B’s every day,” he promised. Everyone gave him a big group hug. From that day on, Leo was proud to be a Lowell Lion!"
+    ];
+
+    const images = [
+      "leo_page1.png",
+      "leo_page2.png",
+      "leo_page3.png",
+      "leo_page4.png",
+      "leo_page5.png",
+      "leo_page6.png",
+      "leo_page7.png",
+      "leo_page8.png",
+      "leo_page9.png",
+      "leo_page10.png"
+    ];
+
+    let currentPage = 0;
+    let currentAudio = null;
+    const storyDiv = document.getElementById('storyText');
+    const feedback = document.getElementById('feedback');
+
+    function displayPage(index) {
+      const words = pages[index].split(' ');
+      storyDiv.innerHTML = words.join(' ');
+      document.getElementById('storyImage').src = images[index];
+      document.getElementById('storyImage').style.display = 'block';
+    }
+
+    function nextPage() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      if (currentPage < pages.length - 1) {
+        currentPage++;
+        feedback.innerText = '';
+        displayPage(currentPage);
+      } else {
+        goToQuizPage();
+      }
+    }
+
+    function backPage() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      if (currentPage > 0) {
+        currentPage--;
+        feedback.innerText = '';
+        displayPage(currentPage);
+      }
+    }
+
+    function goToQuizPage() {
+      document.getElementById('storyContainer').style.display = 'none';
+      document.getElementById('quiz').style.display = 'block';
+    }
+
+    displayPage(currentPage);
+
+    function startStory() {
+      document.getElementById('titleScreen').style.display = 'none';
+      document.getElementById('storyContainer').style.display = 'block';
+    }
+
+    function playReadAloud() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      const audioFileName = `Page${currentPage + 1}Audio.wav`;
+      currentAudio = new Audio(audioFileName);
+      currentAudio.play().catch(err => {
+        console.error('Audio playback failed:', err);
+      });
+    }
+
+    let score = 0;
+    let answeredQuestions = new Set();
+
+    function checkAnswer(button, questionNumber, selected) {
+      if (answeredQuestions.has(questionNumber)) return;
+
+      answeredQuestions.add(questionNumber);
+
+      const correctAnswers = {
+        1: 'A',
+        2: 'B',
+        3: 'B',
+        4: 'B',
+        5: 'B',
+        6: 'B',
+        7: 'B',
+        8: 'A',
+        9: 'B',
+        10: 'B'
+      };
+
+      const isCorrect = selected === correctAnswers[questionNumber];
+      if (isCorrect) {
+        score++;
+        button.style.backgroundColor = '#c8f7c5'; // green
+      } else {
+        button.style.backgroundColor = '#f7c5c5'; // red
+      }
+
+      if (answeredQuestions.size === 10) {
+        document.getElementById('finalScore').innerText = `🎉 You got ${score} out of 10 correct!`;
+
+        if (endAudio) {
+          endAudio.pause();
+          endAudio.currentTime = 0;
+        }
+
+        if (score <= 5) {
+          endAudio = new Audio('TestFiveOrLess.wav');
+        } else if (score < 10) {
+          endAudio = new Audio('TestSixOrMore.wav');
+        } else {
+          endAudio = new Audio('TestPerfectScore.wav');
+        }
+
+        endAudio.play();
+
+        const finalScoreDiv = document.getElementById('finalScore');
+        const button = document.createElement('button');
+        button.innerText = score === 10 ? "Try Again...?" : "Try Again?";
+        button.onclick = () => {
+          if (endAudio) {
+            endAudio.pause();
+            endAudio.currentTime = 0;
+          }
+          if (score === 10) {
+            loadBonusQuiz();
+          } else {
+            location.reload();
+          }
+        };
+        finalScoreDiv.appendChild(document.createElement('br'));
+        finalScoreDiv.appendChild(button);
+      }
+    }
+
+    function loadBonusQuiz() {
+      bonusMode = true;
+      document.getElementById('quiz').innerHTML = "<h2>Bonus Challenge!</h2>";
+
+      const hardQuestions = [
+        {
+          q: "What does the 'Be Respectful' rule encourage during disagreements?",
+          a: ["To walk away immediately", "To stay calm and kind"],
+          correct: "B"
+        },
+        {
+          q: "Why is being responsible important even when no one is watching?",
+          a: ["Because you might get caught", "Because it builds trust"],
+          correct: "B"
+        },
+        {
+          q: "How do students show they are ready for learning?",
+          a: ["Having supplies and listening", "Running to class"],
+          correct: "A"
+        },
+        {
+          q: "What was Leo awarded at the end of his journey?",
+          a: ["A shiny medal", "A Lowell Lion Badge"],
+          correct: "B"
+        },
+        {
+          q: "Why is walking in line considered being safe?",
+          a: ["It looks cool", "It keeps everyone calm and protected"],
+          correct: "B"
+        },
+        {
+          q: "What does being safe in the hallway help with?",
+          a: ["Getting to lunch faster", "Helping everyone feel calm and protected"],
+          correct: "B"
+        },
+        {
+          q: "How did Leo feel when he helped at lunch?",
+          a: ["Proud", "Tired"],
+          correct: "A"
+        },
+        {
+          q: "What do the 4 B’s help students do?",
+          a: ["Learn and grow together", "Get more free time"],
+          correct: "A"
+        },
+        {
+          q: "What showed Leo he was welcome at Lowell?",
+          a: ["The badge", "The group hug"],
+          correct: "B"
+        },
+        {
+          q: "What should you bring to class to be ready?",
+          a: ["Toys", "Pencils and listening ears"],
+          correct: "B"
+        }
+      ];
+
+      let bonusScore = 0;
+      let bonusAnswered = new Set();
+
+      hardQuestions.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.innerHTML = `<p>${i + 1}. ${item.q}</p>`;
+        div.innerHTML += `<button onclick="checkBonusAnswer(this, ${i}, 'A')">A. ${item.a[0]}</button>`;
+        div.innerHTML += `<button onclick="checkBonusAnswer(this, ${i}, 'B')">B. ${item.a[1]}</button>`;
+        document.getElementById('quiz').appendChild(div);
+      });
+
+      const bonusFeedback = document.createElement('div');
+      bonusFeedback.id = "bonusFeedback";
+      bonusFeedback.className = "feedback";
+      document.getElementById('quiz').appendChild(bonusFeedback);
+
+      window.checkBonusAnswer = function(button, questionNumber, selected) {
+        if (bonusAnswered.has(questionNumber)) return;
+        bonusAnswered.add(questionNumber);
+
+        const correct = hardQuestions[questionNumber].correct;
+        if (selected === correct) {
+          bonusScore++;
+          button.style.backgroundColor = '#c8f7c5';
+        } else {
+          button.style.backgroundColor = '#f7c5c5';
+        }
+
+        if (bonusAnswered.size === 10) {
+        if (bonusScore === 10) {
+          document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-size:2em;">🎉 CONGRATULATIONS! 🎉</div>';
+          const cheerAudio = new Audio('CheerTrack.wav');
+          cheerAudio.play().catch(err => console.error('Failed to play cheer audio:', err));
+        } else {
+            const bonusFeedback = document.getElementById('bonusFeedback');
+            bonusFeedback.innerText = `You got ${bonusScore} out of 10. Try again for perfection!`;
+            const tryAgain = document.createElement('button');
+            tryAgain.innerText = "Try Again";
+            tryAgain.onclick = () => location.reload();
+            bonusFeedback.appendChild(document.createElement('br'));
+            bonusFeedback.appendChild(tryAgain);
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>
