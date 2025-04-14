@@ -6,7 +6,7 @@
   <title>Leo and the 4 B’s – A Lion’s Journey to Lowell Elementary</title>
   <style>
     body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background-color: white;
       padding: 2em;
       display: flex;
@@ -389,8 +389,6 @@
         if (bonusAnswered.size === 10) {
         if (bonusScore === 10) {
           document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-size:2em;">🎉 CONGRATULATIONS! 🎉</div>';
-          const cheerAudio = new Audio('CheerTrack.wav');
-          cheerAudio.play().catch(err => console.error('Failed to play cheer audio:', err));
         } else {
             const bonusFeedback = document.getElementById('bonusFeedback');
             bonusFeedback.innerText = `You got ${bonusScore} out of 10. Try again for perfection!`;
